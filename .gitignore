@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+!*.tfvars.example
+
+# Docker
+*.env
+!.env.example
+
+# Secrets
+*.key
+*.pem
+secrets/
+
+# Referencia (clonamos pero no subimos)
+reference/
