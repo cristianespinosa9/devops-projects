@@ -17,27 +17,50 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      automountServiceAccountToken: false
       containers:
         - name: app
           image: cristianespinosa9/prod-app:1.0.0
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
+              name: http
+              protocol: TCP
           resources:
             requests:
               cpu: "50m"
               memory: "64Mi"
+              ephemeral-storage: "100Mi"
             limits:
               cpu: "200m"
               memory: "128Mi"
+              ephemeral-storage: "500Mi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
           readinessProbe:
             httpGet:
               path: /healthz
-              port: 3000
+              port: http
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /healthz
-              port: 3000
+              port: http
             initialDelaySeconds: 15
             periodSeconds: 20
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
