@@ -1,0 +1,60 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  yaml-lint:
+    name: Lint YAML
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar yamllint
+        run: pip install yamllint
+
+      - name: Ejecutar yamllint
+        run: |
+          # Crear config si no existe
+          if [ ! -f .yamllint.yml ]; then
+            cat > .yamllint.yml <<'YAML'
+          extends: default
+          rules:
+            line-length:
+              max: 200
+            comments-indentation: disable
+            document-start: disable
+            indentation:
+              spaces: 2
+              indent-sequences: false
+          YAML
+          fi
+          yamllint .
+
+  shell-lint:
+    name: Lint Shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          severity: warning
+
+  markdown-lint:
+    name: Lint Markdown
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@v17
+        with:
+          globs: '**/*.md'
+        continue-on-error: true   # las notas tuyas no tienen que ser perfectas
