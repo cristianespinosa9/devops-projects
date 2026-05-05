@@ -1,0 +1,30 @@
+extends: default
+
+rules:
+  # GitHub Actions usa `on:` como key, que en YAML 1.1 es palabra "truthy".
+  # Excluimos esa palabra (y "yes/no" históricos) para evitar falsos positivos.
+  truthy:
+    allowed-values: ['true', 'false']
+    check-keys: false
+
+  # Líneas largas son comunes en YAMLs de manifests.
+  line-length:
+    max: 200
+    level: warning
+
+  # Comentarios mal alineados — relajamos.
+  comments-indentation: disable
+
+  # No exigir --- al inicio del archivo.
+  document-start: disable
+
+  # Indentación: 2 espacios + sequences indentadas (forma A).
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+
+ignore: |
+  reference/
+  .terraform/
+  node_modules/
