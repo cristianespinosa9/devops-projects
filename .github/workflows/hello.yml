@@ -1,0 +1,35 @@
+name: Hello Workflow
+
+# Cuándo correrlo
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:   # permite correrlo a mano desde la UI
+
+jobs:
+  saludar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mostrar contexto
+        run: |
+          echo "Hola desde GitHub Actions"
+          echo "Repo: ${{ github.repository }}"
+          echo "Rama: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Autor: ${{ github.actor }}"
+          echo "Trigger: ${{ github.event_name }}"
+
+      - name: Sistema operativo del runner
+        run: |
+          uname -a
+          cat /etc/os-release
+
+      - name: Programas pre-instalados
+        run: |
+          docker --version
+          node --version
+          python3 --version
+          kubectl version --client
+          terraform version
