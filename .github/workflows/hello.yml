@@ -1,12 +1,11 @@
 name: Hello Workflow
 
-# Cuándo correrlo
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch:   # permite correrlo a mano desde la UI
+  workflow_dispatch:
 
 jobs:
   saludar:
@@ -26,10 +25,31 @@ jobs:
           uname -a
           cat /etc/os-release
 
-      - name: Programas pre-instalados
+      - name: Programas pre-instalados (tolerante)
         run: |
-          docker --version
-          node --version
-          python3 --version
-          kubectl version --client
-          terraform version
+          set +e   # no abortar si alguno no está
+          echo "=== Docker ==="
+          docker --version || echo "no instalado"
+          echo "=== Node ==="
+          node --version || echo "no instalado"
+          echo "=== Python ==="
+          python3 --version || echo "no instalado"
+          echo "=== kubectl ==="
+          kubectl version --client || echo "no instalado"
+          echo "=== helm ==="
+          helm version || echo "no instalado"
+          echo "=== gh ==="
+          gh --version || echo "no instalado"
+          echo "=== aws ==="
+          aws --version 2>&1 || echo "no instalado"
+
+  con-terraform:
+    name: Con Terraform instalado a propósito
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+
+      - name: Verificar
+        run: terraform version
