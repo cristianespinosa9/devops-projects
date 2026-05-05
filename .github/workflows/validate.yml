@@ -1,0 +1,66 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - '.github/workflows/validate.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - '.github/workflows/validate.yml'
+  workflow_dispatch:
+
+jobs:
+  k8s-manifests:
+    name: Validar manifiestos K8s
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar kubeconform
+        run: |
+          curl -sL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz \
+            | tar -xz -C /usr/local/bin kubeconform
+          kubeconform -v
+
+      - name: Validar todos los YAMLs en apps/
+        run: |
+          # -strict: no acepta campos desconocidos
+          # -summary: resumen al final
+          # -kubernetes-version: chequea contra una versión específica
+          kubeconform \
+            -strict \
+            -summary \
+            -kubernetes-version 1.30.0 \
+            apps/
+
+  dockerfiles:
+    name: Lint Dockerfiles
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: apps/prod-app/Dockerfile
+          failure-threshold: warning
+          format: tty
+
+  iac-misconfig:
+    name: Trivy config (K8s + Dockerfile)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trivy config scan
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: 'config'
+          scan-ref: 'apps/'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          exit-code: '1'
+          ignore-unfixed: true
